@@ -1,36 +1,41 @@
 #include <iostream>
 #include "DoubleLinkedList.h"
 
-bool func(int x){
-    if(x>6)
+bool func(int x) {
+    if (x > 6)
         return false;
     return true;
 }
 
 int main() {
-    DoubleLinkedList<int> doubleLinkedList;
-    doubleLinkedList.push_back(5);
-    doubleLinkedList.push_back(6);
-    doubleLinkedList.push_back(7);
-    doubleLinkedList.push_back(8);
-    doubleLinkedList.delete_by_index(3);
-    std::cout<<doubleLinkedList.element_at(2)<<std::endl;
-    std::cout<<doubleLinkedList.length()<<std::endl;
-
-
     DoubleLinkedList<int> list;
-    list.push_forward(10);
-    list.push_back(6);
-    list.push_back(8);
-    list.push_forward(7);
-    std::cout<<list.element_at(0)<<std::endl;
-
-
-    for(auto itter_liked_list = doubleLinkedList.begin();itter_liked_list!=doubleLinkedList.end();++itter_liked_list){
-        std::cout<<(*itter_liked_list).data<<std::endl;
+    for (int i = 0; i < 100; ++i) {
+        if (i <= 50) {
+            list.push_back(i);
+        }
+        else {
+            list.push_forward(i);
+        }
     }
-    auto deleted = doubleLinkedList.remove_if(func);
+    for (int i = 0; i <=9; ++i) {
+        list.delete_by_index(i*10+9);
+    }
+    for (auto itt = list.begin(); itt != list.end(); ++itt){
+        std::cout<<(*itt).get_data()<<" ";
+    }
+    std::cout<<std::endl;
+    std::cout<<list.length()<<std::endl;
+    /*erase,insert*/
+    /*insert by itter*/
+    /*erase by positionrealisze*/
+    for(int i = 0 ; i<list.length();++i){
+        list.delete_by_index(0);
+    }
 
-
-    return 0;
+    for (auto itt = list.begin(); itt != list.end(); ++itt){
+        std::cout<<(*itt).get_data()<<" ";
+    }
+    std::cout<<std::endl;
+    std::cout<<list.length()<<std::endl;
+        return 0;
 }

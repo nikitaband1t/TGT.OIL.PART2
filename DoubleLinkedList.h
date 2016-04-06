@@ -16,11 +16,12 @@ struct Node {
 
     Node(T data);
 
+    Node() { }
+
     void set_data(T data);
 
     T get_data();
 
-    T remove();
 };
 
 template<class T>
@@ -38,14 +39,6 @@ T Node<T>::get_data() {
     return this->data;
 }
 
-template<class T>
-T Node<T>::remove() {
-    right.reset();
-    left.reset();
-    right.get()->left = left;
-    left.get()->right = right;
-    return data;
-}
 
 template<class T>
 class MyIterator : std::iterator<std::input_iterator_tag, std::shared_ptr<Node<T>>> {
@@ -58,18 +51,21 @@ public:
     MyIterator(const MyIterator &mit) : MyIterator(mit.ptr) { }
 
     MyIterator &operator++() {
-        ptr = ptr.get()->right;
+        if (ptr->right != nullptr)
+            ptr = ptr.get()->right;
         return *this;
     }
 
     MyIterator &operator--() {
         if (ptr->left != nullptr) {
-           ptr = ptr.get()->left;
+            ptr = ptr.get()->left;
             return *this;
         }
     }
 
-    bool operator!=(const MyIterator &myIterator) { return ptr != myIterator.ptr; }
+    bool operator!=(const MyIterator &myIterator) {
+        return ptr.get() != myIterator.ptr.get();
+    }
 
     Node<T> &operator*() { return *ptr.get(); }
 
@@ -93,23 +89,23 @@ public:
 
     T *delete_first_elem(T elem);
 
-    std::shared_ptr<Node<T>> previous();
-
-    std::shared_ptr<Node<T>> next();
-
     MyIterator<T> &begin();
 
     MyIterator<T> &end();
 
 
-    T remove();
+    void remove(const T &_data);
 
-    DoubleLinkedList &remove_if(bool f(T data));
+    void remove_if(bool f(T data));
 
     T element_at(int ind);
 
     long length();
+
 };
+
+
+
 
 template<class T>
 DoubleLinkedList<T>::DoubleLinkedList() {
@@ -117,7 +113,6 @@ DoubleLinkedList<T>::DoubleLinkedList() {
 }
 
 template<class T>
-
 MyIterator<T> &DoubleLinkedList<T>::begin() {
     MyIterator<T> *bgt = new MyIterator<T>(_begin);
     return *bgt;
@@ -125,7 +120,7 @@ MyIterator<T> &DoubleLinkedList<T>::begin() {
 
 template<class T>
 MyIterator<T> &DoubleLinkedList<T>::end() {
-    MyIterator<T> *bgt = new MyIterator<T>(_end);
+    MyIterator<T> *bgt = new MyIterator<T>(_end.get()->right);
     return *bgt;
 }
 
@@ -139,7 +134,8 @@ T DoubleLinkedList<T>::push_back(T elem) {
         return elem;
     }
     _end.get()->right = std::shared_ptr<Node<T>>(new Node<T>(elem));
-    _end.get()->right.get()->left = std::shared_ptr<Node<T>>(new Node<T>(elem));
+    _end.get()->right.get()->left = _end;
+    _end.get()->right.get()->right = std::shared_ptr<Node<T>>(new Node<T>());
     _end = _end.get()->right;
     return elem;
 }
@@ -162,9 +158,11 @@ T DoubleLinkedList<T>::delete_by_index(long num) {
         _length--;
         if (num == 0) {
             _begin = _begin.get()->right;
+            _begin.get()->left = nullptr;
         }
         else if (num == (_length)) {
             _end = _end.get()->left;
+            _end->right = std::shared_ptr<Node<T>>(new Node<T>());
         }
         else {
             int itterator = 0;
@@ -173,7 +171,6 @@ T DoubleLinkedList<T>::delete_by_index(long num) {
                 begin_itt = begin_itt.get()->right;
                 itterator++;
             }
-            std::cout << begin_itt.use_count() << std::endl;
             begin_itt.get()->right.get()->left = begin_itt.get()->left;
             begin_itt.get()->left.get()->right = begin_itt.get()->right;
             return begin_itt.get()->get_data();
@@ -205,8 +202,8 @@ long DoubleLinkedList<T>::length() {
 
 
 template<class T>
-DoubleLinkedList &DoubleLinkedList<T>::remove_if(bool (*func)(T data)) {
-    std::shared_ptr<DoubleLinkedList> list_out(new DoubleLinkedList());
+void DoubleLinkedList<T>::remove_if(bool (*func)(T data)) {
+    std::unique_ptr<DoubleLinkedList<T>> list_out(new DoubleLinkedList<T>());
 
     for (auto itt = begin(); itt != end(); ++itt) {
         if (func((*itt).data)) {
@@ -215,7 +212,7 @@ DoubleLinkedList &DoubleLinkedList<T>::remove_if(bool (*func)(T data)) {
         }
 
     }
-    return  *list_out.get();
+    return *list_out.get();
 }
 
 
