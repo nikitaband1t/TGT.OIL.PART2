@@ -67,6 +67,10 @@ public:
         return ptr.get() != myIterator.ptr.get();
     }
 
+    bool operator==(const MyIterator &myIterator) {
+        return ptr.get() == myIterator.ptr.get();
+    }
+
     Node<T> &operator*() { return *ptr.get(); }
 
 };
@@ -85,16 +89,13 @@ public:
 
     T add_at(int ind);
 
-    T delete_by_index(long num);
-
-    T *delete_first_elem(T elem);
+    T remove_index(long num);
 
     MyIterator<T> &begin();
 
     MyIterator<T> &end();
 
-
-    void remove(const T &_data);
+    void remove(MyIterator<T> &);
 
     void remove_if(bool f(T data));
 
@@ -153,7 +154,7 @@ T DoubleLinkedList<T>::element_at(int ind) {
 
 
 template<class T>
-T DoubleLinkedList<T>::delete_by_index(long num) {
+T DoubleLinkedList<T>::remove_index(long num) {
     if (num >= 0 && num < _length) {
         _length--;
         if (num == 0) {
@@ -200,19 +201,28 @@ long DoubleLinkedList<T>::length() {
     return _length;
 }
 
-
+template <class T>
+void DoubleLinkedList<T>::remove(MyIterator<T> &query){
+    int i = 0;
+    for (auto itt = begin(); itt != end(); ++itt,++i) {
+        if(query == itt) {
+            remove_index(i);
+            break;
+        }
+    }
+}
 template<class T>
 void DoubleLinkedList<T>::remove_if(bool (*func)(T data)) {
     std::unique_ptr<DoubleLinkedList<T>> list_out(new DoubleLinkedList<T>());
 
     for (auto itt = begin(); itt != end(); ++itt) {
         if (func((*itt).data)) {
-            list_out.get()->push_back((*itt).remove());
+            remove(itt);
             --itt;
         }
 
     }
-    return *list_out.get();
+
 }
 
 
